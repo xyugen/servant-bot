@@ -4,7 +4,7 @@ const { REST, Routes, ApplicationCommandOptionType } = require("discord.js");
 const commands = [
     {
         name: "ping",
-        description: "Replies with Pong!",
+        description: "Replies with the bot's latency.",
     },
     {
         name: "decide",

@@ -12,6 +12,22 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "ping") {
         await interaction.reply("Pong!");
     }
+
+    if (interaction.commandName === "decide") {
+        const choice1 = interaction.options.getString("first-choice");
+        const choice2 = interaction.options.getString("second-choice");
+        const choice3 = interaction.options.getString("third-choice");
+        const choices = [choice1, choice2, choice3].filter(Boolean);
+
+        const randomIndex = Math.floor(Math.random() * choices.length);
+        const decision = choices[randomIndex];
+
+        await interaction.reply(`The decision is: ${decision}`);
+    }
 });
+
+const randomNumberInRange = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 client.login(process.env.TOKEN);

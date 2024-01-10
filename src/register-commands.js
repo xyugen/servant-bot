@@ -1,11 +1,35 @@
 require('dotenv').config();
-const { REST, Routes } = require("discord.js");
+const { REST, Routes, ApplicationCommandOptionType } = require("discord.js");
 
 const commands = [
     {
         name: "ping",
         description: "Replies with Pong!",
     },
+    {
+        name: "decide",
+        description: "Let the bot decide!",
+        options: [
+            {
+                name: "first-choice",
+                description: "The first choice",
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+            {
+                name: "second-choice",
+                description: "The second choice",
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+            {
+                name: "third-choice",
+                description: "The third choice",
+                type: ApplicationCommandOptionType.String,
+                required: false,
+            }
+        ]
+    }
 ];
 
 const registerSlashCommands = async () => {

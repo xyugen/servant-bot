@@ -10,7 +10,10 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === "ping") {
-        await interaction.reply({ content: `🏓 Latency is \`${Date.now() - interaction.createdTimestamp}ms\`. API Latency is \`${Math.round(client.ws.ping)}ms\``, ephemeral: true });
+        await interaction.reply({ 
+            content: `🏓 Latency is \`${Date.now() - interaction.createdTimestamp}ms\`. API Latency is \`${Math.round(client.ws.ping)}ms\``,
+            ephemeral: true
+        });
     }
 
     if (interaction.commandName === "decide") {

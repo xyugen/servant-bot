@@ -1,0 +1,16 @@
+{
+  "name": "servant-bot",
+  "version": "1.0.0",
+  "description": "A simple Discord bot",
+  "main": "src/index.js",
+  "scripts": {
+    "start" : "node src/index.js",
+    "register" : "node src/register-commands.js"
+  },
+  "author": "xyugen",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1"
+  }
+}

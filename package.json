@@ -4,12 +4,13 @@
   "description": "A simple Discord bot",
   "main": "src/index.js",
   "scripts": {
-    "start" : "node src/index.js",
-    "register" : "node src/register-commands.js"
+    "start": "node src/index.js",
+    "register": "node src/register-commands.js"
   },
   "author": "xyugen",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.5",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1"
   }

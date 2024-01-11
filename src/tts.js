@@ -4,7 +4,7 @@ const axios = require('axios');
 const encodedParams = new URLSearchParams();
 encodedParams.set("f", "8khz_8bit_mono");
 encodedParams.set("c", "mp3");
-encodedParams.set("r", "0");
+encodedParams.set("r", "-2");
 encodedParams.set("v", "Mike");
 encodedParams.set("hl", "en-us");
 encodedParams.set("src", "");

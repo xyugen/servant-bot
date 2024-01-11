@@ -75,20 +75,27 @@ client.on("interactionCreate", async (interaction) => {
                 },
             });
 
+            // Event listener for state changes
+            connection.on(VoiceConnectionStatus.Disconnected, (state) => {
+                interaction.channel.send(
+                    "Bot disconnected from voice channel."
+                );
+                player.stop();
+                hasJoined = false;
+            });
+
             // MODE JOIN
             if (interaction.options.getString("mode") === "join") {
                 try {
-                        connection.subscribe(player);
-                        hasJoined = true;
-                        
-                        const resource = createAudioResource(
-                            textToSpeech("Hello, World!")
-                        );
-                        player.play(resource);
+                    connection.subscribe(player);
+                    hasJoined = true;
 
-                        await interaction.reply(
-                            "Joined the voice channel!"
-                        );
+                    const resource = createAudioResource(
+                        textToSpeech("Hello my niggas!")
+                    );
+                    player.play(resource);
+
+                    await interaction.reply("Joined the voice channel!");
                 } catch (error) {
                     console.error(
                         `Error joining voice channel: ${error.message}`

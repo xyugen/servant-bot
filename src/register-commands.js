@@ -51,6 +51,18 @@ const commands = [
                 ]
             }
         ]
+    },
+    {
+        name: "debug",
+        description: "Debug data",
+        options: [
+            {
+                name: "input",
+                description: "The data to be debugged.",
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            }
+        ]
     }
 ];
 

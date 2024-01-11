@@ -1,5 +1,6 @@
 require("dotenv").config();
 const keep_alive = require("./keep_alive");
+const { inspect } = require("util");
 const {
     EmbedBuilder,
     Client,
@@ -34,6 +35,7 @@ client.on("ready", () => {
 });
 
 var hasJoined = false;
+const botOwnerId = "560612243012845578";
 
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
@@ -59,7 +61,7 @@ client.on("interactionCreate", async (interaction) => {
         await interaction.reply(`The decision is: ${decision}`);
     }
 
-    // TALK TO SPEECH
+    // TEXT TO SPEECH
     if (interaction.commandName === "tts") {
         const voiceChannel = interaction.member?.voice;
 
@@ -117,6 +119,38 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.reply(
                 "You need to be in a voice channel to use this command."
             );
+        }
+    }
+
+    if (interaction.commandName === "debug") {
+        const code = interaction.options.getString("input");
+
+        // Check if the user invoking the command is the bot owner
+        if (interaction.user.id !== botOwnerId) {
+            await interaction.reply(
+                "You are not the bot owner. This command is restricted."
+            );
+            return;
+        }
+
+        try {
+            const result = eval(code);
+            const formattedResult = inspect(result, { depth: 0 });
+
+            const embed = new EmbedBuilder()
+                .setTitle("Debug Output")
+                .addFields(
+                    { name: "📥 Input", value: `\`\`\`js\n${code}\n\`\`\`` },
+                    {
+                        name: "📤 Output",
+                        value: `\`\`\`js\n${formattedResult}\n\`\`\``,
+                    }
+                )
+                .setFooter({ text: `Code was executed in: ${Date.now() - interaction.createdTimestamp}ms.` })
+                .setColor(0xea5c52);
+            await interaction.reply({ embeds: [embed] });
+        } catch (error) {
+            await interaction.reply(`Error: ${error.message}`);
         }
     }
 });

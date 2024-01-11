@@ -72,24 +72,21 @@ client.on("interactionCreate", async (interaction) => {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
             });
-            
+
             // MODE JOIN
             if (interaction.options.getString("mode") === "join") {
-                // const resource = createAudioResource(textToSpeech("Hello, World!"));
-                // player.play(resource);
                 try {
-                    connection.on(VoiceConnectionStatus.Ready, async () => {
-                        if (getVoiceConnection(voiceChannel.guild.id)) {
-                            connection.subscribe(player);
-                            await interaction.reply(
-                                "Joined the voice channel!"
-                            );
-                        } else {
-                            await interaction.reply(
-                                "I am already in a voice channel."
-                            );
-                        }
-                    });
+                        connection.subscribe(player);
+
+                        
+                        const resource = createAudioResource(
+                            textToSpeech("Hello, World!")
+                        );
+                        player.play(resource);
+
+                        await interaction.reply(
+                            "Joined the voice channel!"
+                        );
                 } catch (error) {
                     console.error(
                         `Error joining voice channel: ${error.message}`
@@ -102,10 +99,8 @@ client.on("interactionCreate", async (interaction) => {
 
             // MODE QUIT
             if (interaction.options.getString("mode") === "quit") {
-                connection.on(VoiceConnectionStatus.Ready, async () => {
-                    connection.destroy();
-                    await interaction.reply("Exited the voice channel!");
-                });
+                connection.destroy();
+                await interaction.reply("Exited the voice channel!");
             }
         } else {
             await interaction.reply(

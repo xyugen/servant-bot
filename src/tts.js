@@ -8,29 +8,38 @@ encodedParams.set("r", "2");
 encodedParams.set("hl", "en-us");
 encodedParams.set("src", "");
 
-const options = {
-  method: "POST",
-  url: "https://voicerss-text-to-speech.p.rapidapi.com/",
-  params: {
-    key: process.env.VOICE_RSS_API_KEY,
-  },
-  headers: {
-    "content-type": "application/x-www-form-urlencoded",
-    "X-RapidAPI-Key": "30e6267decmsh6a70771fbbcf348p178513jsn34182e072570",
-    "X-RapidAPI-Host": "voicerss-text-to-speech.p.rapidapi.com",
-  },
-  data: encodedParams,
-};
+const fs = require("fs");
+const path = require("path");
 
 const textToSpeech = async (text) => {
-    encodedParams.set("src", text);
+  encodedParams.set("src", text);
 
-    try {
-        const response = await axios.request(options);
-        console.log(response.data);
-    } catch (error) {
-        console.error(error);
-    }
+  const options = {
+      method: "POST",
+      url: "https://voicerss-text-to-speech.p.rapidapi.com/",
+      params: {
+          key: process.env.VOICE_RSS_API_KEY,
+      },
+      headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+          "X-RapidAPI-Host": "voicerss-text-to-speech.p.rapidapi.com",
+          "Accept": "audio/mpeg",
+      },
+      responseType: "arraybuffer",
+      data: encodedParams,
+  };
+
+  try {
+      const response = await axios.request(options);
+
+      /* const outputPath = path.join(__dirname, "output.mp3");
+      fs.writeFileSync(outputPath, Buffer.from(response.data, "binary")); */
+
+      return response.data;
+  } catch (error) {
+      console.error(error);
+  }
 };
 
 module.exports = { textToSpeech };

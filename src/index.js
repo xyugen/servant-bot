@@ -1,6 +1,19 @@
-require('dotenv').config();
-const { EmbedBuilder, Client, Events, GatewayIntentBits, Partials } = require("discord.js");
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, NoSubscriberBehavior } = require("@discordjs/voice");
+require("dotenv").config();
+const {
+    EmbedBuilder,
+    Client,
+    Events,
+    GatewayIntentBits,
+    Partials,
+} = require("discord.js");
+const {
+    joinVoiceChannel,
+    createAudioPlayer,
+    createAudioResource,
+    getVoiceConnection,
+    VoiceConnectionStatus,
+    NoSubscriberBehavior,
+} = require("@discordjs/voice");
 
 const { textToSpeech } = require("./tts");
 
@@ -10,7 +23,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.GuildVoiceStates
+        GatewayIntentBits.GuildVoiceStates,
     ],
     partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
@@ -23,9 +36,11 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === "ping") {
-        await interaction.reply({ 
-            content: `🏓 Latency is \`${Date.now() - interaction.createdTimestamp}ms\`. API Latency is \`${Math.round(client.ws.ping)}ms\``,
-            ephemeral: true
+        await interaction.reply({
+            content: `🏓 Latency is \`${
+                Date.now() - interaction.createdTimestamp
+            }ms\`. API Latency is \`${Math.round(client.ws.ping)}ms\``,
+            ephemeral: true,
         });
     }
 
@@ -41,60 +56,61 @@ client.on("interactionCreate", async (interaction) => {
         await interaction.reply(`The decision is: ${decision}`);
     }
 
+    // TALK TO SPEECH
     if (interaction.commandName === "tts") {
         const voiceChannel = interaction.member?.voice;
 
-        const connection = joinVoiceChannel({
-            channelId: voiceChannel.channelId,
-            guildId: voiceChannel.guild.id,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-        });
+        if (voiceChannel.channelId) {
+            const connection = joinVoiceChannel({
+                channelId: voiceChannel.channelId,
+                guildId: voiceChannel.guild.id,
+                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+            });
 
-        const player = createAudioPlayer({
-            behaviors: {
-            noSubscriber: NoSubscriberBehavior.Pause,
-            },
-        });
-
-        if (interaction.options.getString("mode") === "join") {
-            if (voiceChannel) {
+            const player = createAudioPlayer({
+                behaviors: {
+                    noSubscriber: NoSubscriberBehavior.Pause,
+                },
+            });
+            
+            // MODE JOIN
+            if (interaction.options.getString("mode") === "join") {
                 // const resource = createAudioResource(textToSpeech("Hello, World!"));
                 // player.play(resource);
-
                 try {
-                if (!connection) {
-                    await connection.subscribe(player);
-                    await interaction.reply("Joined the voice channel!");
-                } else {
-                    await interaction.reply("I am already in a voice channel!");
-                }
+                    connection.on(VoiceConnectionStatus.Ready, async () => {
+                        if (getVoiceConnection(voiceChannel.guild.id)) {
+                            connection.subscribe(player);
+                            await interaction.reply(
+                                "Joined the voice channel!"
+                            );
+                        } else {
+                            await interaction.reply(
+                                "I am already in a voice channel."
+                            );
+                        }
+                    });
                 } catch (error) {
                     console.error(
-                      `Error joining voice channel: ${error.message}`
+                        `Error joining voice channel: ${error.message}`
                     );
                     await interaction.reply(
-                      "An error occurred while joining the voice channel."
+                        "An error occurred while joining the voice channel."
                     );
                 }
-            } else {
-                await interaction.reply("You need to be in a voice channel to use this command." );
-                return;
             }
-        }
-        
-        if (interaction.options.getString("mode") === "quit") {
-            if (voiceChannel) {
-                if (connection) {
-                    connection.destroy();
 
+            // MODE QUIT
+            if (interaction.options.getString("mode") === "quit") {
+                connection.on(VoiceConnectionStatus.Ready, async () => {
+                    connection.destroy();
                     await interaction.reply("Exited the voice channel!");
-                } else {
-                    await interaction.reply("I am not in a voice channel!");
-                }
-            } else {
-                await interaction.reply("You need to be in a voice channel to use this command.");
-                return;
+                });
             }
+        } else {
+            await interaction.reply(
+                "You need to be in a voice channel to use this command."
+            );
         }
     }
 });
@@ -121,11 +137,11 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         await reaction.remove();
         return;
     }
-    
+
     if (
         reaction.message &&
         reaction.message.id === verificationMessageId &&
-        reaction.emoji.name === '✅'
+        reaction.emoji.name === "✅"
     ) {
         console.log("Verifying user...");
         const message = await user.send("You are being verified...");
@@ -134,12 +150,14 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         const verifiedUser = reaction.message.guild.members.cache.get(user.id);
 
         // Assign the "verified" role
-        const verifiedRole = reaction.message.guild.roles.cache.find((role) => role.name === "verified");
-        
+        const verifiedRole = reaction.message.guild.roles.cache.find(
+            (role) => role.name === "verified"
+        );
+
         try {
             if (verifiedRole) {
                 verifiedUser.roles.add(verifiedRole);
-                console.log((`User ${user.tag} has been verified.`));
+                console.log(`User ${user.tag} has been verified.`);
                 message.edit("You have been verified in IT Dark Room!");
             }
         } catch (error) {
@@ -152,13 +170,15 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
     if (
         reaction.message &&
         reaction.message.id === verificationMessageId &&
-        reaction.emoji.name === '✅'
+        reaction.emoji.name === "✅"
     ) {
         // Get the user who reacted
         const verifiedUser = reaction.message.guild.members.cache.get(user.id);
 
         // Remove the "verified" role
-        const verifiedRole = reaction.message.guild.roles.cache.find((role) => role.name === "verified");
+        const verifiedRole = reaction.message.guild.roles.cache.find(
+            (role) => role.name === "verified"
+        );
 
         try {
             if (verifiedRole && verifiedUser.roles.cache.has(verifiedRole.id)) {
@@ -169,10 +189,10 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
             console.error(error);
         }
     }
-})
+});
 
 const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
-}
+};
 
 client.login(process.env.TOKEN);

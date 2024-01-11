@@ -1,5 +1,8 @@
 require('dotenv').config();
 const { EmbedBuilder, Client, Events, GatewayIntentBits, Partials } = require("discord.js");
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, NoSubscriberBehavior } = require("@discordjs/voice");
+
+const { textToSpeech } = require("./tts");
 
 const client = new Client({
     intents: [
@@ -7,6 +10,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildVoiceStates
     ],
     partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
@@ -36,6 +40,63 @@ client.on("interactionCreate", async (interaction) => {
 
         await interaction.reply(`The decision is: ${decision}`);
     }
+
+    if (interaction.commandName === "tts") {
+        const voiceChannel = interaction.member?.voice;
+
+        const connection = joinVoiceChannel({
+            channelId: voiceChannel.channelId,
+            guildId: voiceChannel.guild.id,
+            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+        });
+
+        const player = createAudioPlayer({
+            behaviors: {
+            noSubscriber: NoSubscriberBehavior.Pause,
+            },
+        });
+
+        if (interaction.options.getString("mode") === "join") {
+            if (voiceChannel) {
+                // const resource = createAudioResource(textToSpeech("Hello, World!"));
+                // player.play(resource);
+
+                try {
+                if (!connection) {
+                    await connection.subscribe(player);
+                    await interaction.reply("Joined the voice channel!");
+                } else {
+                    await interaction.reply("I am already in a voice channel!");
+                }
+                } catch (error) {
+                    console.error(
+                      `Error joining voice channel: ${error.message}`
+                    );
+                    await interaction.reply(
+                      "An error occurred while joining the voice channel."
+                    );
+                }
+            } else {
+                await interaction.reply("You need to be in a voice channel to use this command." );
+                return;
+            }
+        }
+        
+        if (interaction.options.getString("mode") === "quit") {
+            if (voiceChannel) {
+                if (connection) {
+                    connection.destroy();
+
+                    await interaction.reply("Exited the voice channel!");
+                } else {
+                    await interaction.reply("I am not in a voice channel!");
+                }
+            } else {
+                await interaction.reply("You need to be in a voice channel to use this command.");
+                return;
+            }
+        }
+    }
 });
 
 /* client.on("messageCreate", async (message) => {
@@ -57,7 +118,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         reaction.message.id === verificationMessageId &&
         reaction.emoji.name !== "✅"
     ) {
-        reaction.remove();
+        await reaction.remove();
         return;
     }
     

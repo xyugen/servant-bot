@@ -29,6 +29,28 @@ const commands = [
                 required: false,
             }
         ]
+    },
+    {
+        name: "tts",
+        description: "Text to speech",
+        options: [
+            {
+                name: "mode",
+                description: "Make the bot join or quit a voice channel.",
+                type: ApplicationCommandOptionType.String,
+                required: true,
+                choices: [
+                    {
+                        name: "join",
+                        value: "join",
+                    },
+                    {
+                        name: "quit",
+                        value: "quit",
+                    }
+                ]
+            }
+        ]
     }
 ];
 

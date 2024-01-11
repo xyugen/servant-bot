@@ -63,6 +63,18 @@ const commands = [
                 required: true,
             }
         ]
+    },
+    {
+        name: "userinfo",
+        description: "Get info about a user",
+        options: [
+            {
+                name: "user",
+                description: "The user to get info about.",
+                type: ApplicationCommandOptionType.User,
+                required: false,
+            }
+        ]
     }
 ];
 

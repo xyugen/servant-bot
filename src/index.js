@@ -26,6 +26,8 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences
     ],
     partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
@@ -153,6 +155,35 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.reply(`Error: ${error.message}`);
         }
     }
+
+    if (interaction.commandName === "userinfo") {
+        const user = interaction.options.getUser("user") || interaction.user;
+        const member = interaction.guild.members.cache.get(user.id);
+        try {
+            const embed = new EmbedBuilder()
+                .setTitle("User Info")
+                .addFields(
+                    { name: "Name (Username)", value: `${user.globalName} (${user.username})` },
+                    { name: "Nickname", value: member?.nickname ?? "None" },
+                    { name: "ID", value: user.id },
+                    { name: "Created At", value: formatDateString(user.createdAt) },
+                    { name: "Joined At", value: formatDateString(member.joinedAt) },
+                    { name: "Top Role", value:  member.roles.highest.toString() },
+                    { name: "Roles", value: member.roles.cache.map(r => r.toString()).join(", ") },
+                    { name: "Status", value: formatStatus(member.presence?.status) },
+                    { name: "Activity", value: member.presence?.activities[0]?.name ?? "None" },
+                    { name: "Is Bot", value: user.bot ? "Yes" : "No" }
+                )
+                .setThumbnail(user.displayAvatarURL())
+                .setColor(0x5263ea);
+
+            await interaction.reply({ embeds: [embed] });
+        } catch (error) {
+            console.log(formatDateString(user.createdAt));
+            console.log(error);
+            await interaction.reply(`Error: ${error.message}`);
+        }
+    }
 });
 
 const iHabNoMicChannelId = "1014768193451085936";
@@ -253,5 +284,32 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
 const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
 };
+
+function formatDateString(inputDateString) {
+    const inputDate = new Date(inputDateString);
+
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(inputDate);
+
+    return formattedDate;
+}
+
+function formatStatus(status) {
+    switch (status) {
+        case "online":
+            return "🟢 Online";
+        case "idle":
+            return "🟡 Idle";
+        case "dnd":
+            return "🔴 Do Not Disturb";
+        case "offline":
+            return "⚫ Offline";
+        default:
+            return "Unknown Status";
+    }
+}
 
 client.login(process.env.TOKEN);

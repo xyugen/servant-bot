@@ -32,6 +32,8 @@ client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
+var hasJoined = false;
+
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -77,7 +79,7 @@ client.on("interactionCreate", async (interaction) => {
             if (interaction.options.getString("mode") === "join") {
                 try {
                         connection.subscribe(player);
-
+                        hasJoined = true;
                         
                         const resource = createAudioResource(
                             textToSpeech("Hello, World!")
@@ -100,6 +102,7 @@ client.on("interactionCreate", async (interaction) => {
             // MODE QUIT
             if (interaction.options.getString("mode") === "quit") {
                 connection.destroy();
+                hasJoined = false;
                 await interaction.reply("Exited the voice channel!");
             }
         } else {
@@ -109,6 +112,25 @@ client.on("interactionCreate", async (interaction) => {
         }
     }
 });
+
+const iHabNoMicChannelId = "1014768193451085936";
+
+client.on(Events.MessageCreate, async (message) => {
+    if (message.channelId === iHabNoMicChannelId) {
+        if (hasJoined) {
+            const resource = createAudioResource(
+                textToSpeech(message.content)
+            );
+            const player = createAudioPlayer({
+                behaviors: {
+                    noSubscriber: NoSubscriberBehavior.Pause,
+                },
+            })
+            getVoiceConnection(message.guildId).subscribe(player);
+            player.play(resource);
+        }
+    }
+})
 
 /* client.on("messageCreate", async (message) => {
     const embed = new EmbedBuilder()

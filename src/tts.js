@@ -4,12 +4,10 @@ const axios = require('axios');
 const encodedParams = new URLSearchParams();
 encodedParams.set("f", "8khz_8bit_mono");
 encodedParams.set("c", "mp3");
-encodedParams.set("r", "2");
+encodedParams.set("r", "0");
+encodedParams.set("v", "Mike");
 encodedParams.set("hl", "en-us");
 encodedParams.set("src", "");
-
-const fs = require("fs");
-const path = require("path");
 
 const textToSpeech = async (text) => {
   encodedParams.set("src", text);
@@ -32,9 +30,6 @@ const textToSpeech = async (text) => {
 
   try {
       const response = await axios.request(options);
-
-      /* const outputPath = path.join(__dirname, "output.mp3");
-      fs.writeFileSync(outputPath, Buffer.from(response.data, "binary")); */
 
       return response.data;
   } catch (error) {

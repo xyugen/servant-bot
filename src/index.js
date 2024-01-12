@@ -189,16 +189,30 @@ client.on("interactionCreate", async (interaction) => {
 const iHabNoMicChannelId = "1014768193451085936";
 
 client.on(Events.MessageCreate, async (message) => {
-    if (message.channelId === iHabNoMicChannelId) {
+    if (message.channelId === iHabNoMicChannelId && !message.author.bot) {
+        // Replace user mentions with their display names
+        let replacedContent = message.content;
+        for (const user of message.mentions.users.values()) {
+            const displayName =
+                message.guild.members.cache.get(user.id)?.displayName ||
+                user.username;
+            replacedContent = replacedContent.replace(
+                new RegExp(`<@${user.id}>`, "g"),
+                `${displayName}`
+            );
+        }
+
         if (hasJoined) {
             const resource = createAudioResource(
-                textToSpeech(message.content)
+                textToSpeech(
+                    `${message.member.nickname} said: ${replacedContent}`
+                )
             );
             const player = createAudioPlayer({
                 behaviors: {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
-            })
+            });
             getVoiceConnection(message.guildId).subscribe(player);
             player.play(resource);
         }

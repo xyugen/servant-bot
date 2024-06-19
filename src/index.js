@@ -1,5 +1,5 @@
 require("dotenv").config();
-const keep_alive = require("./utils/keep_alive");
+const { keepAlive } = require("./utils/keep_alive");
 const { inspect } = require("util");
 const {
     EmbedBuilder,
@@ -32,8 +32,10 @@ const client = new Client({
     partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
 
-client.on("ready", () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+client.once(Events.ClientReady, (c) => {
+    console.log(`Ready! Logged in as ${c.user.tag}`);
+    
+    keepAlive({ port: 3000 });
 });
 
 var hasJoined = false;
